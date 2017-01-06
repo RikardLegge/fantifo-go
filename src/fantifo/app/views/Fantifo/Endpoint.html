@@ -1,0 +1,106 @@
+{{set . "title" "Endpoint"}}
+{{template "header.html" .}}
+
+<script type="text/javascript">
+    var MessageType = {
+        LATENCY_TEST: 1,
+        REGISTER_CLIENT: 2,
+        TICK: 3,
+        DATA: 4
+    };
+
+    function FantifoEndpoint() {
+    }
+
+    FantifoEndpoint.prototype.connect = function (target, position) {
+        this.target = target;
+        this.position = position;
+        this.socket = new WebSocket('wss://' + window.location.host + '/fantifo/socket?user=' + position);
+        this.latency = -1;
+        this.timeOffset = -1;
+
+        this.timeMap = {};
+
+        this.onMessageFunc = this.onMessage.bind(this);
+        this.onOpenFunc = this.onOpen.bind(this);
+        this.testLatencyFunc = this.testLatency.bind(this);
+        this.tickFunc = this.tick.bind(this);
+
+        this.socket.onopen = this.onOpenFunc;
+        this.socket.onmessage = this.onMessageFunc;
+    };
+
+    FantifoEndpoint.prototype.onOpen = function () {
+        this.testLatency();
+        this.tick();
+
+        setInterval(this.testLatencyFunc, 3000);
+    };
+
+    FantifoEndpoint.prototype.tick = function () {
+        var now = Date.now() - this.timeOffset + this.latency;
+        var timeMap = this.timeMap;
+        var target = this.target;
+
+        Object.keys(timeMap).sort(function (c, n) {
+            return c - n;
+        }).filter(function (c) {
+            return now >= c;
+        }).forEach(function (c) {
+            var colors = timeMap[c];
+            var r = colors.R;
+            var g = colors.G;
+            var b = colors.B;
+
+            target.css('background', 'rgb(' + r + ',' + g + ',' + b + ')');
+            delete timeMap[c];
+        });
+
+        requestAnimationFrame(this.tickFunc);
+    };
+
+    FantifoEndpoint.prototype.onMessage = function (event) {
+        var data = JSON.parse(event.data);
+
+        switch (data.Type) {
+            case MessageType.LATENCY_TEST:
+                this.latency = (Date.now() - data.TimeStamp) / 2;
+                this.timeOffset = Date.now() - data.ServerTimeStamp;
+//                console.log("Latency: " + this.latency + "ms (" + this.timeOffset + ")");
+
+                break;
+            case MessageType.REGISTER_CLIENT:
+                console.log(data);
+
+                break;
+            case MessageType.DATA:
+                var key = data.Time;
+                var val = data.Color;
+                this.timeMap[key] = val;
+
+                break;
+            default:
+                console.log(data);
+                break;
+        }
+    };
+
+    FantifoEndpoint.prototype.testLatency = function () {
+        var obj = {
+            Type: MessageType.LATENCY_TEST,
+            TimeStamp: Date.now()
+        };
+        this.socket.send(MessageType.LATENCY_TEST + JSON.stringify(obj));
+    };
+
+    for (var i = 0; i < 144; i++) {
+        $(document.body).append($('<div id="' + i + '" class="quarter">'));
+        new FantifoEndpoint().connect($('#' + i), i);
+    }
+    //    new FantifoEndpoint().connect($("#2"), 1);
+    //    new FantifoEndpoint().connect($("#3"), 2);
+    //    new FantifoEndpoint().connect($("#4"), 3);
+
+</script>
+
+{{template "footer.html" .}}

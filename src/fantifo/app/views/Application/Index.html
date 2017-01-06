@@ -1,0 +1,28 @@
+{{set . "title" "Sign in"}}
+{{template "header.html" .}}
+
+<div id="home">
+
+    <h2>Fantifo in GO</h2>
+
+    <div id="signin">
+        <form action="{{url "Application.EnterDemo"}}">
+        <p>
+            <label for="position">Position</label>
+            <input type="text" name="position" id="position">
+        </p>
+        <p>
+            <select name="demo" id="tech" style="display: none">
+                <option value="fantifo">Fantifo</option>
+            </select>
+        </p>
+        <p>
+            <label></label>
+            <input type="submit" id="enter" value="Go!">
+        </p>
+        </form>
+    </div>
+
+</div>
+
+{{template "footer.html" .}}

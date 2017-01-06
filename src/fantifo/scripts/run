@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source src/fantifo/scripts/set_workspace
+bin/revel run fantifo

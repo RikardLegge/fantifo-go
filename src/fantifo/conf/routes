@@ -1,0 +1,17 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+module:testrunner
+
+# Login
+#GET     /                                       Application.Index
+#GET     /demo                                   Application.EnterDemo
+
+# Live
+GET     /                                Fantifo.Endpoint
+WS      /fantifo/socket                         Fantifo.EndpointSocket
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/*filepath                       Static.Serve("public")
+

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source src/fantifo/scripts/set_workspace
+go get github.com/revel/revel
+go get github.com/revel/cmd/revel
